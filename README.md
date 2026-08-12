@@ -7,8 +7,10 @@ Consumes Oracle Chester County artifacts (no ingestion here).
 | Item | Location |
 |------|----------|
 | Live runtime | https://cc-bb-aa.github.io/roofing-crm/ |
+| Demo video | `demo/out/crm-demo-transcript.webm` |
 | Data | `apps/web/public/data` published from Oracle pipeline |
 | Oracle PR | https://github.com/prismteam-ai/oracle-property-intelligence-platform-pipeline-chester-county-pa/pull/2 |
+| CRM PR | https://github.com/prismteam-ai/roofing-crm/pull/3 |
 
 ```bash
 npm start   # http://127.0.0.1:4173

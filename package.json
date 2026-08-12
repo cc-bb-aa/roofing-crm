@@ -6,7 +6,8 @@
   "scripts": {
     "start": "npx --yes serve apps/web/public -l 4173",
     "test:unit": "node --import tsx --test tests/unit/*.test.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "demo:record": "node scripts/record-demo.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.51.0",

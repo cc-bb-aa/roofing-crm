@@ -74,12 +74,13 @@ function search() {
       permits: byProp.get(p.propertyId) ?? [],
     }))
     .filter((h) => h.d <= radius)
-    .filter((h) => h.p.roofAgeYears == null || h.p.roofAgeYears >= age || openOnly)
-    .filter((h) =>
-      openOnly
-        ? h.permits.some((x) => x.isRoofing && x.status === "open")
-        : h.p.roofAgeYears != null && h.p.roofAgeYears >= age,
-    )
+    .filter((h) => {
+      if (openOnly) {
+        return h.permits.some((x) => x.status === "open");
+      }
+      if (!age) return true;
+      return h.p.roofAgeYears != null && h.p.roofAgeYears >= age;
+    })
     .sort((a, b) => a.d - b.d)
     .slice(0, 80);
 
@@ -147,8 +148,9 @@ $("ask").onclick = () => {
   const q = $("q").value.toLowerCase();
   $("open").checked = q.includes("open") && q.includes("permit");
   if (q.includes("five miles") || q.includes("5 miles")) $("radius").value = 5;
+  if (q.includes("15")) $("age").value = "15";
   search();
-  $("agent").textContent = `Used Oracle property/permit artifacts (not a separate vector store). Filters applied from the question. ${$("status").textContent}`;
+  $("agent").textContent = `Used Oracle Chester artifacts (not a separate vector store). Open-permit filter uses county Act 247 / EnerGov / health GIS; municipal roofing UCC is not in the public harvest. ${$("status").textContent}`;
 };
 
 boot();
