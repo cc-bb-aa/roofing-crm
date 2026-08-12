@@ -92,11 +92,13 @@ function visibleLeads() {
   const age = Number($("leadAge")?.value || 0);
   const openOnly = $("leadOpen")?.checked;
   const minDays = Number($("leadMinOpen")?.value || 0);
+  const maxMi = Number($("leadRadius")?.value || 0);
   return leads.filter((l) => {
     const roof = l.roofAgeYears ?? l.constructionAgeYears;
     if (age && (roof == null || roof < age)) return false;
     if (openOnly && !l.hasOpen) return false;
     if (minDays && (l.openDays || 0) < minDays) return false;
+    if (maxMi && l.lat != null && miles(pin, [l.lat, l.lng]) > maxMi) return false;
     return true;
   });
 }
@@ -240,6 +242,8 @@ function search() {
       constructionAgeYears: h.p.constructionAgeYears,
       openDays: openDuration(h.permits),
       hasOpen: h.permits.some((p) => p.status === "open"),
+      lat: h.p.lat,
+      lng: h.p.lng,
       createdAt: new Date().toISOString(),
     });
     saveLeads();
