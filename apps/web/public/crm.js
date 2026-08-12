@@ -111,7 +111,7 @@ function renderLeads() {
               <div class="lead-top"><span>${esc(l.upi)}</span><span>saved</span></div>
               <strong class="addr">${esc(l.address)}</strong>
               <div class="chips">
-                <span class="chip age">roof ${esc(l.roofAgeYears ?? l.constructionAgeYears ?? "?")}y</span>
+                <span class="chip age">${l.roofAgeYears != null ? "roof" : "land-dev"} ${esc(l.roofAgeYears ?? l.constructionAgeYears ?? "?")}y</span>
                 ${l.hasOpen ? `<span class="chip open">open ${esc(l.openDays || "?")}d</span>` : ""}
               </div>
               <button type="button" data-del="${esc(safeId(l.id))}">Remove</button>
