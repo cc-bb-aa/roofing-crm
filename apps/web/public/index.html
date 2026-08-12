@@ -30,9 +30,9 @@
       <div class="disabled">Billing (soon)</div>
     </nav>
     <label>Radius miles <input id="radius" type="number" value="5" min="1" max="25" /></label>
-    <label>Roof age ≥ <input id="age" type="number" value="0" /></label>
-    <p style="font-size:0.75rem;opacity:.75">Age 0 shows all parcels in radius. Set 15 to keep only known construction/roof proxies.</p>
-    <label><input id="open" type="checkbox" /> open county permits (Act 247 / health / EnerGov)</label>
+    <label>Roof age ≥ <input id="age" type="number" value="15" /></label>
+    <p style="font-size:0.75rem;opacity:.75">15 keeps known construction/roof proxies. Set 0 for every parcel in radius.</p>
+    <label><input id="open" type="checkbox" /> open county permits (long-open first)</label>
     <button id="usePin">Search at pin</button>
     <button id="gps">Use GPS</button>
     <p id="status">Loading Oracle artifacts…</p>
@@ -41,7 +41,12 @@
   <div class="rail">
     <h2>Matches</h2>
     <div id="hits"></div>
+    <h2 id="detail-h">Selected property / permit</h2>
+    <div id="detail">Click a match to review contractor and BBB.</div>
     <h2>Leads</h2>
+    <label>Lead filter age ≥ <input id="leadAge" type="number" value="0" /></label>
+    <label><input id="leadOpen" type="checkbox" /> leads with open permits</label>
+    <button id="filterLeads">Filter leads</button>
     <div id="leads"></div>
     <h2>Agent</h2>
     <textarea id="q" rows="3">show me open roofing permits older than five years within five miles of West Chester</textarea>

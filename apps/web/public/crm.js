@@ -40,11 +40,21 @@ function saveLeads() {
   renderLeads();
 }
 
+function visibleLeads() {
+  const age = Number($("leadAge")?.value || 0);
+  const openOnly = $("leadOpen")?.checked;
+  return leads.filter((l) => {
+    if (age && (l.roofAgeYears == null || l.roofAgeYears < age)) return false;
+    if (openOnly && !l.hasOpen) return false;
+    return true;
+  });
+}
+
 function renderLeads() {
-  $("leads").innerHTML = leads
+  $("leads").innerHTML = visibleLeads()
     .map(
       (l) =>
-        `<div class="lead"><strong>${l.address}</strong><br>${l.upi}<br>
+        `<div class="lead"><strong>${l.address}</strong><br>${l.upi} · roof ${l.roofAgeYears ?? "?" }y<br>
         <button data-del="${l.id}">Remove</button></div>`,
     )
     .join("");
@@ -81,7 +91,14 @@ function search() {
       if (!age) return true;
       return h.p.roofAgeYears != null && h.p.roofAgeYears >= age;
     })
-    .sort((a, b) => a.d - b.d)
+    .sort((a, b) => {
+      if (openOnly) {
+        const ad = Math.max(0, ...a.permits.map((p) => p.openDurationDays || 0));
+        const bd = Math.max(0, ...b.permits.map((p) => p.openDurationDays || 0));
+        return bd - ad;
+      }
+      return a.d - b.d;
+    })
     .slice(0, 80);
 
   layer.clearLayers();
@@ -101,15 +118,30 @@ function search() {
     )
     .join("");
   $("hits").onclick = (ev) => {
-    const id = ev.target.getAttribute("data-lead");
-    if (!id) return;
+    const leadId = ev.target.getAttribute("data-lead");
+    const hit = ev.target.closest(".hit");
+    const id = leadId || hit?.getAttribute("data-id");
     const h = hits.find((x) => x.p.propertyId === id);
     if (!h) return;
+    const contractors = store.contractors || [];
+    const rows = h.permits
+      .map((p) => {
+        const c = contractors.find((x) => x.contractorId === p.contractorId);
+        return `${p.permitType} · ${p.status} · ${p.openDurationDays ?? "?"}d · ${p.contractorName ?? "—"} · BBB ${c?.bbbRating ?? c?.bbbScore ?? "n/a"} · ${p.provenance.sourceId}`;
+      })
+      .join("<br>");
+    $("detail").innerHTML = `<strong>${h.p.address}</strong> · ${h.p.upi}<br>
+      roof ${h.p.roofAgeYears ?? "?"}y (${h.p.roofAgeBasis}) · owner ${h.p.ownerName ?? "—"}<br>
+      ${rows || "No permits on this parcel."}`;
+    if (!leadId) return;
     if (leads.some((l) => l.id === id)) return;
     leads.push({
       id,
       address: h.p.address,
       upi: h.p.upi,
+      roofAgeYears: h.p.roofAgeYears,
+      openDays: Math.max(0, ...h.permits.map((p) => p.openDurationDays || 0)),
+      hasOpen: h.permits.some((p) => p.status === "open"),
       createdAt: new Date().toISOString(),
     });
     saveLeads();
@@ -148,9 +180,25 @@ $("ask").onclick = () => {
   const q = $("q").value.toLowerCase();
   $("open").checked = q.includes("open") && q.includes("permit");
   if (q.includes("five miles") || q.includes("5 miles")) $("radius").value = 5;
-  if (q.includes("15")) $("age").value = "15";
+  if (q.includes("15") && q.includes("roof")) $("age").value = "15";
+  if (q.includes("open") && q.includes("permit")) $("age").value = "0";
   search();
-  $("agent").textContent = `Used Oracle Chester artifacts (not a separate vector store). Open-permit filter uses county Act 247 / EnerGov / health GIS; municipal roofing UCC is not in the public harvest. ${$("status").textContent}`;
+  const sample = [...document.querySelectorAll(".hit")].slice(0, 5).map((el) => el.innerText);
+  $("agent").textContent = JSON.stringify(
+    {
+      answer: $("status").textContent,
+      caveats: [
+        "Used Oracle Chester artifacts (not a separate vector store).",
+        "Open-permit filter uses county Act 247 / EnerGov / health GIS.",
+        "Municipal roofing UCC is not in the public harvest. BBB is n/a without a public bulk API.",
+      ],
+      evidence: sample,
+    },
+    null,
+    2,
+  );
 };
+
+$("filterLeads") && ($("filterLeads").onclick = renderLeads);
 
 boot();
